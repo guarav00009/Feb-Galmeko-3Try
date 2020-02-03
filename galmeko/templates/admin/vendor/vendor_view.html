@@ -1,0 +1,174 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
+{% if not is_popup %}
+{% block breadcrumbs %}
+<style>
+	td {
+		font-size: 16px;
+	}
+</style>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.1.0/css/responsive.bootstrap.min.css"
+	type="text/css" />
+<div class="row mb-2">
+	<div class="col-sm-4">
+		<h2>{{title}}</h2>
+	</div>
+	<div class="col-sm-8">
+		<ol class="breadcrumb float-sm-right">
+			<li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+			<li class="breadcrumb-item"><a
+					href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+			</li>
+			<li class="breadcrumb-item">
+				{% if has_change_permission %}<a
+					href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+			</li>
+
+			<li class="breadcrumb-item active">{% if add %}{% blocktrans with name=opts.verbose_name %}Add
+				{{ name }}{% endblocktrans %}{% else %}{{ original|truncatewords:"18" }}{% endif %}</li>
+		</ol>
+	</div>
+</div>
+
+{% endblock %}
+{% endif %}
+
+{% block coltype %}flex{% endblock %}
+{% block content %}
+<div id="content-main" class="container-fluid">
+	<form method="post">
+		<input type="hidden" id="csrf_token" value="{{csrf_token}}">
+		<div class="content">
+			<div class="inner">
+				<div class="container">
+					<div id="disp-msg" class="mb-1"></div>
+					<ul class="tabs">
+						<li class="tab-link current" data-tab="tab-1">Basic Details</li>
+						<li class="tab-link" data-tab="tab-2">Booking</li>
+						<li class="tab-link vehicle_listing" data-tab="tab-3">Vehicles</li>
+						<li class="tab-link driver_listing" data-tab="tab-4">Drivers</li>
+						<li class="tab-link" data-tab="tab-5">Finance</li>
+					</ul>
+
+					<div id="tab-1" class="tab-content current">
+						<table class="table table-striped">
+							<tr>
+								<td>Full Name : </td>
+								<td>
+									{{ userDetail.user.first_name|default_if_none:"---" }}
+									{{ userDetail.user.last_name|default_if_none:"---" }}
+								</td>
+							</tr>
+							<tr>
+								<td>Email : </td>
+								<td>
+									{{ userDetail.user.email|default_if_none:"---" }}
+								</td>
+							</tr>
+							<tr>
+								<td>Company Name : </td>
+								<td>
+									{{ userDetail.company_name|default_if_none:"---" }}
+								</td>
+							</tr>
+							<tr>
+								<td>Phone : </td>
+								<td>
+									{{ userDetail.user.phone|default_if_none:"---" }}
+								<td>
+							</tr>
+							<tr>
+								<td>Status : </td>
+								<td>
+									{% if userDetail.status == 0  %}
+									Pending
+									{% elif userDetail.status == 1  %}
+									Active
+									{% elif userDetail.status == 2  %}
+									Rejected
+									{% elif userDetail.status == 3  %}
+									Deleted
+									{% endif %}
+								</td>
+							</tr>
+						</table>
+
+
+					</div>
+					<div id="tab-2" class="tab-content">
+						<div class="container">
+							Boking Details
+						</div>
+					</div>
+					<div id="tab-3" class="tab-content">
+						<div class="container">
+							<table class="table table-bordered" id="vehicle">
+								<input type="hidden" value="{{ userDetail.user.id}}" name="vendor_id" id="vendor_id">
+								<thead>
+									<tr>
+										<th>Vehicle No</th>
+										<th>Mileage</th>
+										<th>Chassis No</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+							</table>
+						</div>
+					</div>
+					<div id="tab-4" class="tab-content">
+						<div class="container">
+							<table class="table table-bordered" id="driver">
+								<input type="hidden" value="{{ userDetail.id}}" name="vendor" id="vendor">
+								<thead>
+									<tr>
+										<th>First Name</th>
+										<th>Last Name</th>
+										<th>Email</th>
+										<th>phone</th>
+										<th>Address</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+							</table>
+						</div>
+					</div>
+					<div id="tab-5" class="tab-content">
+						<div class="container">
+							Finance
+						</div>
+					</div>
+					<div class="mt-5">
+						<a href="{{request.META.HTTP_REFERER}}" class="btn btn-sm btn-info">Go back</a>
+					</div>
+				</div><!-- container -->
+			</div>
+
+		</div>
+	</form>
+</div>
+
+<script>
+	$(document).ready(function () {
+
+		$('ul.tabs li').click(function () {
+			var tab_id = $(this).attr('data-tab');
+
+			$('ul.tabs li').removeClass('current');
+			$('.tab-content').removeClass('current');
+
+			$(this).addClass('current');
+			$("#" + tab_id).addClass('current');
+		})
+
+	})
+</script>
+{% endblock %}
